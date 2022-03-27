@@ -57,6 +57,9 @@ University_1['School'] <- "University_1"
 
 library(dplyr)
 # https://datacornering.com/dplyr-error-in-select-unused-argument/
+# Herein, I am deleting 4 columns including the start and end date
+# for future reference, I might want to keep these columns -- 
+## to explore the impact dates could have had on the study data. 
 
 names(University_2[,1:7])
 University_2<-University_2 %>% dplyr::select(-(1:4))
@@ -70,13 +73,13 @@ names(University_2[,1:7])
 #"LocationLongitude","DistributionChannel", "UserLanguage"         
 #"Q81" 
 
-names(University_2[,2:14])
+names(University_2[,1:14])
 University_2<-University_2 %>% dplyr::select(-(2:14))
-names(University_2[,2:14])
+names(University_2[,1:14])
 
 ## Delete similar columns for University_1 as for University_2
 ## since this was done in University_1 by an additional researcher
-## their exported data looks slightly different than University_2
+## their exported Qualtrics data looks slightly different than University_2
 ## "StartDate" "EndDate"   "Status"
 
 names(University_1[,1:3])
@@ -84,17 +87,17 @@ University_1<-University_1 %>% dplyr::select(-(1:3))
 names(University_1 [,1:3])
 
 
-names(University_1 [,2:8])
+names(University_1 [,1:8])
 #"Duration..in.seconds." "Finished","RecordedDate"         
 #"ResponseId","DistributionChannel", "UserLanguage""Consent"
 
 University_1<-University_1 %>% dplyr::select(-(2:8))
-names(University_1 [,2:8])
+names(University_1 [,1:8])
 
 # Merge into one single Data frame
 # https://www.statology.org/r-combine-two-data-frames-with-different-columns/
 
-# library(dplyr)
+library(dplyr)
 
 Total <- bind_rows(University_2, University_1)
 
@@ -113,19 +116,21 @@ table(as.factor(Total$Condition))
 
 # this is the question that asked participants for the race
 # of the subject of the vignette -- this is the Black transgender
-## woman condition
+## Race Question of Manipulation. BTW condition 
 table(as.factor(Total$Q297))
+## 37 failed the attention check
 
 ## BTW condition gender identity question 
 table(as.factor(Total$Q298))
-
+## 37 failed this second attention check
 
 ## wtm Race manipulation check 
 table(as.factor(Total$Q293))
+        ## 18 failed the attention check 
 
 ## wtm Race manipulation check 
 table(as.factor(Total$Q294))
-
+## 34 failed the attention check 
 
 ### Re-Coding Reverse Coded Items 
 # symbolic racism - recoding 1,2,4,8 
@@ -143,40 +148,43 @@ table(as.factor(Total$SR1.2_1))
 # https://condor.depaul.edu/phenry1/SR2Kinstructions.htm
 # https://stackoverflow.com/questions/47521920/recode-multiple-columns-using-dplyr
 
-# Recoding for items with the same scale: 1,2,6,7,8 for this scale
-# has multiple types of scales with different response options
+# Recoding for items with the same response format: 1,2,6,7,8 for this scale
+# has multiple types of questions with different response formats
 
 library(plyr)
 levels(as.factor(Total$SR1.2_1))
 
 
 
-colSums(is.na(Total))
+# colSums(is.na(Total))
 
 # figure out the items of interest column index of items 
 ## 1,2,6,7,8
 names(Total)
 
-# recoding its its numericals 
+# recoding the responses into its numerical codes 
 Total <- Total %>% mutate_at(c(30:31,35:37), list(~recode(.,"Strongly Agree"=1, 
                                                          "Somewhat Agree"=2, 
                                                          "Somewhat Disagree"=3, 
                                                          "Strongly Disagree" = 4)))
-table(as.factor(Total$SR1.2_1))
 table(Total$SR1.2_1)
 
 ## the vast majority said they strongly disagreed with this item
-## It's really a matter of some people not trying hard 
-## enough; if blacks would only try harder they could be just as well off as whites.
+## "It's really a matter of some people not trying hard 
+## enough; if blacks would only try harder they could be just as well off as whites."
+## this is good, it suggests less racial bias
+
 par(mar = c(1, 1, 1, 1))
+## this is a terrible plot of the responses
+## i need to use GGplot2 next time
 plot(as.factor(Total$SR1.2_1))
 table(as.factor(Total$SR1.2_1))
 
 # # Recoding for items  3 to fit Scale coding 
 names(Total)
 table(as.factor(Total$SR3_1))
-## Some say that black leaders have been trying 
-## to push too fast.  Others feel that they haven't pushed fast enough.  What do you think?  
+## "Some say that black leaders have been trying 
+## to push too fast.  Others feel that they haven't pushed fast enough.  What do you think?"  
 
 Total <- Total %>% mutate_at(c(32), list(~recode(.,"Trying to push very much too fast"=1, 
                                                           "Going too slowly"=2, 
@@ -189,8 +197,8 @@ plot(as.factor(Total$SR3_1))
 
 
 ## recoding item 4
-## How much of the racial tension that exists 
-### in the United States today do you think blacks are responsible for creating? 
+## "How much of the racial tension that exists 
+### in the United States today do you think blacks are responsible for creating?"
 
 names(Total)
 # table(as.factor(Total$SR4_1))
@@ -200,14 +208,14 @@ Total <- Total %>% mutate_at(c(33), list(~recode(.,"All of it"=1,
                                                  "Not much at all"=4)))
 
 table(as.factor(Total$SR4_1))
-#There is alot more variability in this item
+#There is alot more variability in this item in the 3's and 4's
 plot(as.factor(Total$SR4_1))
 
 
 # recoding item 5, SR5_1
-## How much discrimination against blacks do you 
+## "How much discrimination against blacks do you 
 ## feel there is in the United States today, limiting 
-# their chances to get ahead?
+# their chances to get ahead?"
 
 names(Total)
 table(as.factor(Total$SR5_1))
@@ -218,17 +226,17 @@ Total <- Total %>% mutate_at(c(34), list(~recode(.,"A lot"=1,
 
 plot(as.factor(Total$SR5_1))
 # alot more variability in this question but overall the same trend
-## people are overall on average not looking too racist
 
 
-## Changing their Names to make them more interpretable 
+## Changing the variable for the Symbolic Racism scale
+## to make them more interpretable 
 
 names(Total)[30:37]<-paste0('SimRac', 1:8)
 
 ## Recoding reverse coded items in the symbolic racism scale
 ## These items include 1, 2, 4, 8, 3
 # https://condor.depaul.edu/phenry1/SR2Kinstructions.htm
-## the recoding format is exactly as instructed by Henry and Sears for thir scale
+## the recoding format is exactly as instructed by Henry and Sears for their scale
 # "....items 1, 2, 4, and 8 need to be recoded so that a 1 = 4, 2 = 3, 3 = 2, and 4 = 1." 
 
 names(Total) # to get 1, 2, 4, and 8 index
@@ -248,26 +256,26 @@ Total[,c(32)] <- 4-Total[,c(32)]
 
 table(as.factor(Total$SimRac3))
 
-## the Symbolic Racism Scale has been recoded and is THerefore clean
+## the Symbolic Racism Scale has been re-coded and is Therefore clean
 
 ## Create an Average score for Racism for Participants
 # https://www.statology.org/average-across-columns-in-r/
 # finding column index
-names(Total)
-TestRun<-Total
-TestRun$SymRac_mean<-rowMeans(TestRun[ , c(30:37)]) 
-
-## Doing Anova between conditions
-
-one.way <- aov(SymRac_mean ~ Condition, data = TestRun)
-
-summary(one.way)
-
-# p < .001
-
-tapply(TestRun$SymRac_mean, TestRun$Condition, mean, na.rm=TRUE)
-
-tapply(TestRun$SymRac_mean, TestRun$Condition, sd, na.rm=TRUE)
+# names(Total)
+# TestRun<-Total
+# TestRun$SymRac_mean<-rowMeans(TestRun[ , c(30:37)]) 
+# 
+# ## Doing Anova between conditions
+# 
+# one.way <- aov(SymRac_mean ~ Condition, data = TestRun)
+# 
+# summary(one.way)
+# 
+# # p < .001
+# 
+# tapply(TestRun$SymRac_mean, TestRun$Condition, mean, na.rm=TRUE)
+# 
+# tapply(TestRun$SymRac_mean, TestRun$Condition, sd, na.rm=TRUE)
 
 # oddly enough they are more racist in the white man condition 
 
@@ -303,54 +311,54 @@ data.frame(colnames(Total))
 ## Create an Average score for the Sexism Scale
 # https://www.statology.org/average-across-columns-in-r/
 # finding column index
-names(Total)
-TestRun<-Total
-TestRun$Sexism_mean<-rowMeans(TestRun[ , c(6:20)]) 
-
-## Doing Anova between conditions
-
-one.way <- aov(Sexism_mean ~ Condition, data = TestRun)
-
-summary(one.way)
-
-# p < .001
-
-tapply(TestRun$Sexism_mean, TestRun$Condition, mean, na.rm=TRUE)
-
-tapply(TestRun$Sexism_mean, TestRun$Condition, sd, na.rm=TRUE)
-
-# oddly enough they are more sexist in the white man condition 
-
+# names(Total)
+# TestRun<-Total
+# TestRun$Sexism_mean<-rowMeans(TestRun[ , c(6:20)]) 
+# 
+# ## Doing Anova between conditions
+# 
+# one.way <- aov(Sexism_mean ~ Condition, data = TestRun)
+# 
+# summary(one.way)
+# 
+# # p < .001
+# 
+# tapply(TestRun$Sexism_mean, TestRun$Condition, mean, na.rm=TRUE)
+# 
+# tapply(TestRun$Sexism_mean, TestRun$Condition, sd, na.rm=TRUE)
+# 
+# # oddly enough they are more sexist in the white man condition 
+# 
 
 ## Renaming Transphobia Scale
 names(Total)[21:29]<-paste0('TransPH', 1:9)
 data.frame(colnames(Total))
 View(Total)
 # This scale has no reverse coded items
-names(Total)
-TestRun<-Total
-
-## convert the values from character to numeric
-## https://stackoverflow.com/questions/22772279/converting-multiple-columns-from-character-to-numeric-format-in-r
-library(dplyr)
-TestRun <- TestRun %>% 
-    mutate_at(c(21:29), as.numeric)
-
-TestRun$Transphobia_mean<-rowMeans(TestRun[ , c(21:29)])
-
-## Doing Anova between conditions
-
-one.way <- aov(Transphobia_mean ~ Condition, data = TestRun)
-
-summary(one.way)
-
-# p < .001
-
-tapply(TestRun$Transphobia_mean, TestRun$Condition, mean, na.rm=TRUE)
-
-tapply(TestRun$Transphobia_mean, TestRun$Condition, sd, na.rm=TRUE)
-# for this one-- folks were more transphobic in the 
-##  Btw condition
+# names(Total)
+# TestRun<-Total
+# 
+# ## convert the values from character to numeric
+# ## https://stackoverflow.com/questions/22772279/converting-multiple-columns-from-character-to-numeric-format-in-r
+# library(dplyr)
+# TestRun <- TestRun %>% 
+#     mutate_at(c(21:29), as.numeric)
+# 
+# TestRun$Transphobia_mean<-rowMeans(TestRun[ , c(21:29)])
+# 
+# ## Doing Anova between conditions
+# 
+# one.way <- aov(Transphobia_mean ~ Condition, data = TestRun)
+# 
+# summary(one.way)
+# 
+# # p < .001
+# 
+# tapply(TestRun$Transphobia_mean, TestRun$Condition, mean, na.rm=TRUE)
+# 
+# tapply(TestRun$Transphobia_mean, TestRun$Condition, sd, na.rm=TRUE)
+# # for this one-- folks were more transphobic in the 
+# ##  Btw condition
 
 
 ## Renaming Sub scales of Political Ideology
@@ -533,7 +541,7 @@ data.frame(colnames(Total))
 Total<-Total %>% dplyr::select(-(122))
 data.frame(colnames(Total))
 
-write.csv(Total,"C:/Users/cogps/Desktop/Thesis Analysis/Clean_Data_2022.csv", row.names=FALSE)
+write.csv(Total,"C:/Users/cogps/Desktop/Thesis Analysis/Clean_Data_2022_Latest.csv", row.names=FALSE)
 
 
 ## some NA's are coming back as <NA> and others as NA --
@@ -728,4 +736,54 @@ table(apply(Total, 1, percentmiss))
 ## Since my data is derived from ordinal scales, Koh & Zumbo (2008)
 # state that an estimation method for such data should be applied
 # p.471-472
+
+## Preliminary Analyses-
+# correlations for divergent and convergent validity
+
+## correlation of items 6 through 20 for Seperate Spheres Ideology
+data.frame(colnames(Total))
+# https://www.rdocumentation.org/packages/multilevel/versions/2.6/topics/item.total
+#install.packages("multilevel")
+library(multilevel)
+levels(as.factor(Total$Condition))
+
+# Separate Spheres Ideology Scale 
+item.total(Total[,6:20])
+item.total(subset(Total, Total$Condition == "wm")[,6:20])
+item.total(subset(Total, Total$Condition == "BTW")[,6:20])
+
+data.frame(colnames(Total))
+
+
+## transphobia scale 21:29
+## scale is not numeric- so i need to convert it
+library(dplyr)
+Total <- Total %>% 
+     mutate_at(c(21:29), as.numeric)
+ 
+item.total(Total[,21:29])
+wm<-item.total(subset(Total, Total$Condition == "wm")[,21:29])
+BTW<-item.total(subset(Total, Total$Condition == "BTW")[,21:29])
+
+wm$Item.Total-BTW$Item.Total
+
+# symbolic racism 30:37
+data.frame(colnames(Total))
+
+item.total(Total[,30:37])
+wm<-item.total(subset(Total, Total$Condition == "wm")[,30:37])
+BTW<-item.total(subset(Total, Total$Condition == "BTW")[,30:37])
+wm$Item.Total-BTW$Item.Total
+
+## Creating Row means of three main scales
+Total$SymRac_mean<-rowMeans(Total[ , c(30:37)]) 
+Total$Transph_mean<-rowMeans(Total[ , c(21:29)]) 
+Total$Separ_Spheres_mean<-rowMeans(Total[ , c(6:20)]) 
+
+## correlations between the three scales
+# https://stackoverflow.com/questions/3798998/cor-shows-only-na-or-1-for-correlations-why
+cor(x = as.matrix(subset (Total, select = c(Separ_Spheres_mean, Transph_mean, SymRac_mean))), 
+    method = "pearson", use = "pairwise.complete.obs")
+?cor
+## Integrate a MLM analysis to MGCFA in variance testing
 
