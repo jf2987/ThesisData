@@ -4,11 +4,22 @@
 setwd("C:/Users/cogps/Desktop/Thesis Analysis")
 CleanData <- read.csv("Clean_Data_2022_Latest.csv") 
 
+## Delete rows that which are completely empty for the variables of interest
+## https://www.r-bloggers.com/2021/06/remove-rows-that-contain-all-na-or-certain-columns-in-r/
+
+library(tidyr)
+CleanData<-CleanData %>% drop_na(6:20)
+
+names(CleanData)
+
+## 
+
 library(lavaan)
 
 head(CleanData)
 
 table(CleanData$Condition)
+## BTW 333, wm 331
 
 ## the first lavaan
 
@@ -151,3 +162,67 @@ table_fit[7, ] <- c("Strict Model", round(fitmeasures(strict.fit,
                                                       c("chisq", "df", "cfi",
                                                         "rmsea", "srmr")),3))
 kable(table_fit)
+
+
+## latent means
+
+predicted_scores <- lavPredict(strict.fit, type="ov")
+
+table(CleanData$Condition)
+
+View(predicted_scores)
+
+predicted_scores <- as.data.frame(do.call(rbind, predicted_scores))
+
+View(predicted_scores)
+
+# the code breaks here for me -- its cuz I think there are rows
+## that literally have nothing entered -- so complete rows missing for 
+## the variables of interest 
+predicted_scores$Condition <- c(rep("wm", 331), rep("BTW", 333))
+View(predicted_scores)
+ 
+
+predicted_scores$sum <- apply(predicted_scores[ , 1:15], 1, sum)
+View(predicted_scores)
+
+## Predicted Model Scores
+tapply(predicted_scores$sum, predicted_scores$Condition, mean)                               
+  
+## Actual Data Average Score
+names(CleanData)
+CleanData$sum <- apply(CleanData[ , 6:20], 1, sum)
+
+tapply(CleanData$sum, CleanData$Condition, mean)
+
+## latent means
+latent_means<-lavPredict(strict.fit)
+latent_means <- as.data.frame(do.call(rbind, latent_means))
+table(CleanData$Condition)
+
+latent_means$Condition <- c(rep("wm", 331), rep("BTW", 333))
+
+options(scipen=999)
+
+View(latent_means)
+# z scores
+tapply(latent_means$SSIT, latent_means$Condition, mean) 
+
+# real scores
+tapply(CleanData$sum, CleanData$Condition, mean, na.rm = T)
+tapply(CleanData$sum, CleanData$Condition, sd, na.rm = T)
+
+## Calculate Effect Size
+
+library(MOTE)
+M <-tapply(CleanData$sum, CleanData$Condition, mean)
+SD <-tapply(CleanData$sum, CleanData$Condition, sd)
+N <- tapply(CleanData$sum, CleanData$Condition, length)
+
+effect_size<-d.ind.t(M[1], M[2], SD[1], SD[2], N[1], N[2], a = .05)
+
+effect_size$estimate
+#"$d_s$ = -0.02, 95\\% CI [-0.17, 0.13]"
+
+effect_size$statistic
+# "$t$(662) = -0.27, $p$ = .788"
