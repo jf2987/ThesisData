@@ -6,9 +6,43 @@ CleanData <- read.csv("Clean_Data_2022_Latest.csv")
 
 ## Delete rows that which are completely empty for the variables of interest
 ## https://www.r-bloggers.com/2021/06/remove-rows-that-contain-all-na-or-certain-columns-in-r/
+## https://stackoverflow.com/questions/51596658/remove-rows-which-have-all-nas-in-certain-columns
+
+# library(tidyr)
+
+## I need to figure out what the difference between these two methods are
+## this is what is impacting my latent means code
+
+## CleanData<-CleanData %>% drop_na(6:20)
+
+## test run drop_na Function
+## https://www.r-bloggers.com/2021/06/remove-rows-that-contain-all-na-or-certain-columns-in-r/
+df=data.frame(Col1=c("A","B","C","D",
+                     "P1","P2","P3")
+              ,Col2=c(NA,8,NA,9,10,8,9)
+              ,Col3=c(NA,7,6,8,NA,7,8)
+              ,Col4=c(NA,NA,7,7,NA,7,7))
+df
 
 library(tidyr)
-CleanData<-CleanData %>% drop_na(6:20)
+df %>% drop_na(2:4)
+## so, this one deletes them if they had NA on any of the columsn mentioned
+## they dont necessarly have to have ALL of the columns NA
+## this is not what I wanted
+
+## Now test running the other code
+
+df=data.frame(Col1=c("A","B","C","D",
+                     "P1","P2","P3")
+              ,Col2=c(NA,8,NA,9,10,8,9)
+              ,Col3=c(NA,7,6,8,NA,7,8)
+              ,Col4=c(NA,NA,7,7,NA,7,7))
+df
+
+df[!apply(is.na(df[,2:4]), 1, all),]
+## this code worked
+
+CleanData<-CleanData[!apply(is.na(CleanData[,6:20]), 1, all),]
 
 names(CleanData)
 
@@ -19,7 +53,11 @@ library(lavaan)
 head(CleanData)
 
 table(CleanData$Condition)
-## BTW 333, wm 331
+## with the apply function we get
+## BTW 333, wm 332
+
+## with the drop_na() we get
+## 335 and 343
 
 ## the first lavaan
 
@@ -80,6 +118,7 @@ summary(wm.fit,
         standardized = TRUE, 
         rsquare = TRUE, 
         fit.measure = TRUE)
+## apparently only 331 of 332 rows were used for the white model-- I wonder why
 
 table_fit[3, ] <- c("wm Model", round(fitmeasures(wm.fit, 
                                                    c("chisq", "df", "cfi",
@@ -151,6 +190,7 @@ strict.fit <- cfa(model = overall.model,
                   meanstructure = TRUE,
                   group = "Condition",
                   group.equal=c("loadings", "intercepts", "residuals")) ##this is important 
+## wm 331 BTW 333
 
 summary(strict.fit, 
         standardized = TRUE, 
@@ -165,7 +205,7 @@ kable(table_fit)
 
 
 ## latent means
-
+?lavPredict
 predicted_scores <- lavPredict(strict.fit, type="ov")
 
 table(CleanData$Condition)
@@ -179,9 +219,20 @@ View(predicted_scores)
 # the code breaks here for me -- its cuz I think there are rows
 ## that literally have nothing entered -- so complete rows missing for 
 ## the variables of interest 
+
+
+#predicted_scores$Condition <- c(rep("wm", 331), rep("BTW", 333))
+
+## is_na() -- BTW 335 and wm 343
+## this is with the is_na()
+
 predicted_scores$Condition <- c(rep("wm", 331), rep("BTW", 333))
+## this was breaking because it was using the sample sizes that it used for the 
+## strict model-- this can be viewed in the summary() output of said model
+## my question now is-- why have some rows not acquired output for this model?
+
 View(predicted_scores)
- 
+## 331 instead of 332 -- am unsure what is going on here 
 
 predicted_scores$sum <- apply(predicted_scores[ , 1:15], 1, sum)
 View(predicted_scores)
@@ -193,15 +244,15 @@ tapply(predicted_scores$sum, predicted_scores$Condition, mean)
 names(CleanData)
 CleanData$sum <- apply(CleanData[ , 6:20], 1, sum)
 
-tapply(CleanData$sum, CleanData$Condition, mean)
-
+tapply(CleanData$sum, CleanData$Condition, mean, na.rm = TRUE)
+?tapply
 ## latent means
 latent_means<-lavPredict(strict.fit)
 latent_means <- as.data.frame(do.call(rbind, latent_means))
-table(CleanData$Condition)
+# table(CleanData$Condition)
 
 latent_means$Condition <- c(rep("wm", 331), rep("BTW", 333))
-
+## 331 instead of 332
 options(scipen=999)
 
 View(latent_means)
@@ -215,14 +266,23 @@ tapply(CleanData$sum, CleanData$Condition, sd, na.rm = T)
 ## Calculate Effect Size
 
 library(MOTE)
-M <-tapply(CleanData$sum, CleanData$Condition, mean)
-SD <-tapply(CleanData$sum, CleanData$Condition, sd)
-N <- tapply(CleanData$sum, CleanData$Condition, length)
+M <-tapply(CleanData$sum, CleanData$Condition, mean, na.rm = TRUE)
+SD <-tapply(CleanData$sum, CleanData$Condition, sd, na.rm = TRUE)
+N <- tapply(CleanData$sum, CleanData$Condition, length, na.rm = TRUE)
 
 effect_size<-d.ind.t(M[1], M[2], SD[1], SD[2], N[1], N[2], a = .05)
 
 effect_size$estimate
 #"$d_s$ = -0.02, 95\\% CI [-0.17, 0.13]"
+
+## to get rid of this error I needed to get na.rm into the tapply function
+## the above code worked before but now I am getting this error. 
+## Error in if (abs(ncp) > 37.62) print("The observed noncentrality parameter 
+#of the noncentral t-distribution has exceeded 37.62 in magnitude 
+#(R's limitation for accurate probabilities from the noncentral t-distribution) 
+#in the function's iterative search for the appropriate value(s). The results 
+#may be fine, but they might be inaccurate; use caution.") : 
+#missing value where TRUE/FALSE needed
 
 effect_size$statistic
 # "$t$(662) = -0.27, $p$ = .788"
