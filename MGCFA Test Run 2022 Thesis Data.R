@@ -71,7 +71,7 @@ summary(overall.fit,
         rsquare = TRUE, 
         fit.measure = TRUE)
 
-## Make table with the results
+#### Make table with the results #### 
 
 library(knitr)
 table_fit <- matrix(NA, nrow = 9, ncol = 6)
@@ -144,7 +144,7 @@ table_fit[4, ] <- c("Configural Model", round(fitmeasures(configural.fit,
                                                     "rmsea", "srmr")),3))
 kable(table_fit)
 
-## Metric Invariance - setting the loadings to equal
+#### Metric Invariance - setting the loadings to equal ####
 
 metric.fit <- cfa(model = overall.model,
                       data = CleanData, 
@@ -165,7 +165,7 @@ kable(table_fit)
     # the loadings between the groups are basically equal
  
 
-## Scalar Invariance -- setting the intercepts to equal
+#### Scalar Invariance -- setting the intercepts to equal####
 
 scalar.fit <- cfa(model = overall.model,
                   data = CleanData, 
@@ -183,7 +183,7 @@ table_fit[6, ] <- c("Scalar Model", round(fitmeasures(scalar.fit,
                                                         "rmsea", "srmr")),3))
 kable(table_fit)
 
-### Strict (Error) Invariance-- constrict the errors to be the same 
+#### Strict (Error) Invariance-- constrict the errors to be the same ####
 
 strict.fit <- cfa(model = overall.model,
                   data = CleanData, 
@@ -268,7 +268,7 @@ tapply(CleanData$sum, CleanData$Condition, sd, na.rm = T)
 library(MOTE)
 M <-tapply(CleanData$sum, CleanData$Condition, mean, na.rm = TRUE)
 SD <-tapply(CleanData$sum, CleanData$Condition, sd, na.rm = TRUE)
-N <- tapply(CleanData$sum, CleanData$Condition, length, na.rm = TRUE)
+N <- tapply(CleanData$sum, CleanData$Condition, length)
 
 effect_size<-d.ind.t(M[1], M[2], SD[1], SD[2], N[1], N[2], a = .05)
 
@@ -286,3 +286,163 @@ effect_size$estimate
 
 effect_size$statistic
 # "$t$(662) = -0.27, $p$ = .788"
+
+## Saving a CSV File with the Table with the Model Fir Indices for SepSphere Strict
+write.csv(table_fit,  "C:/Users/cogps/Desktop/SepSphereFitStats.csv", row.names=FALSE)
+
+#### Running a MGCFA for the Transphobia Scale
+setwd("C:/Users/cogps/Desktop/Thesis Analysis")
+CleanData <- read.csv("Clean_Data_2022_Latest.csv") 
+
+## Find the location of the Items of Interest
+
+## this code worked
+
+names(CleanData)
+CleanData<-CleanData[!apply(is.na(CleanData[,21:29]), 1, all),]
+## 678 to 666 
+
+library(lavaan)
+
+table(CleanData$Condition)
+## BTW 333 and wm 333
+
+
+## the first lavaan
+names(CleanData)
+overall.model = ' TransPH =~ TransPH1 + TransPH2 + TransPH3 + TransPH4 + TransPH5 + TransPH6 + TransPH7 + TransPH8 + TransPH9'
+
+overall.fit <- cfa(model = overall.model,
+                   data = CleanData, 
+                   meanstructure = TRUE) ##this is important 
+summary(overall.fit, 
+        standardized = TRUE, 
+        rsquare = TRUE, 
+        fit.measure = TRUE)
+
+#### Make Table ####
+
+library(knitr)
+table_fit <- matrix(NA, nrow = 9, ncol = 6)
+colnames(table_fit) = c("Model", "X2", "df", "CFI", "RMSEA", "SRMR")
+table_fit[1, ] <- c("Overall Model", round(fitmeasures(overall.fit, 
+                                                       c("chisq", "df", "cfi",
+                                                         "rmsea", "srmr")),3))
+kable(table_fit)
+
+## Do a model specific per condition : BTW
+
+BTW.fit <- cfa(model = overall.model,
+               data = CleanData[CleanData$Condition=="BTW", ], 
+               meanstructure = TRUE) ##this is important 
+summary(BTW.fit, 
+        standardized = TRUE, 
+        rsquare = TRUE, 
+        fit.measure = TRUE)
+## 331 out of 333 were used for this model
+
+
+## Make table with the results of BTW
+
+table_fit[2, ] <- c("BTW Model", round(fitmeasures(BTW.fit, 
+                                                   c("chisq", "df", "cfi",
+                                                     "rmsea", "srmr")),3))
+kable(table_fit)
+
+
+## Do a model specific per condition : wm
+
+wm.fit <- cfa(model = overall.model,
+              data = CleanData[CleanData$Condition=="wm", ], 
+              meanstructure = TRUE) ##this is important 
+summary(wm.fit, 
+        standardized = TRUE, 
+        rsquare = TRUE, 
+        fit.measure = TRUE)
+## apparently only 330 of 333 rows were used for the white model
+
+table_fit[3, ] <- c("wm Model", round(fitmeasures(wm.fit, 
+                                                  c("chisq", "df", "cfi",
+                                                    "rmsea", "srmr")),3))
+kable(table_fit)
+
+
+## Configural Invariance
+
+configural.fit <- cfa(model = overall.model,
+                      data = CleanData, 
+                      meanstructure = TRUE,
+                      group = "Condition") ##this is important 
+
+summary(configural.fit, 
+        standardized = TRUE, 
+        rsquare = TRUE, 
+        fit.measure = TRUE)
+
+table_fit[4, ] <- c("Configural Model", round(fitmeasures(configural.fit, 
+                                                          c("chisq", "df", "cfi",
+                                                            "rmsea", "srmr")),3))
+kable(table_fit)
+
+### MEtric Invariance
+
+metric.fit <- cfa(model = overall.model,
+                  data = CleanData, 
+                  meanstructure = TRUE,
+                  group = "Condition",
+                  group.equal=c("loadings")) ##this is important 
+
+summary(metric.fit, 
+        standardized = TRUE, 
+        rsquare = TRUE, 
+        fit.measure = TRUE)
+
+table_fit[5, ] <- c("Metric Model", round(fitmeasures(metric.fit, 
+                                                      c("chisq", "df", "cfi",
+                                                        "rmsea", "srmr")),3))
+kable(table_fit)
+
+## Scalar Invariance
+
+scalar.fit <- cfa(model = overall.model,
+                  data = CleanData, 
+                  meanstructure = TRUE,
+                  group = "Condition",
+                  group.equal=c("loadings", "intercepts")) ##this is important 
+
+summary(scalar.fit, 
+        standardized = TRUE, 
+        rsquare = TRUE, 
+        fit.measure = TRUE)
+
+table_fit[6, ] <- c("Scalar Model", round(fitmeasures(scalar.fit, 
+                                                      c("chisq", "df", "cfi",
+                                                        "rmsea", "srmr")),3))
+kable(table_fit)
+
+## Strict Invariance
+
+strict.fit <- cfa(model = overall.model,
+                  data = CleanData, 
+                  meanstructure = TRUE,
+                  group = "Condition",
+                  group.equal=c("loadings", "intercepts", "residuals")) ##this is important 
+## wm 331 BTW 333
+
+summary(strict.fit, 
+        standardized = TRUE, 
+        rsquare = TRUE, 
+        fit.measure = TRUE)
+
+
+table_fit[7, ] <- c("Strict Model", round(fitmeasures(strict.fit, 
+                                                      c("chisq", "df", "cfi",
+                                                        "rmsea", "srmr")),3))
+kable(table_fit)
+
+## 
+write.csv(table_fit,  "C:/Users/cogps/Desktop/Transphobia_FitStats.csv", row.names=FALSE)
+
+
+
+## Fitting models with the Racism Scales Might be different 
