@@ -547,7 +547,6 @@ write.csv(Total,"C:/Users/cogps/Desktop/Thesis Analysis/Clean_Data_2022_Latest.c
 ## some NA's are coming back as <NA> and others as NA --
 ## https://stackoverflow.com/questions/16253789/what-is-the-difference-between-na-and-na
 
-
 ## trying Little's imputation Technique 
 # https://www.youtube.com/watch?v=LmyRcu75XEI
 # https://stackoverflow.com/questions/66075314/bayloredpsych-package-for-rstudio-cant-install-package
@@ -587,7 +586,7 @@ na.test(TotalScalesOnly, digits = 2, p.digits = 3, as.na = NULL, check = TRUE, o
 # p value not significant 
 
 
-## figuring out the amounf of missingness per column and row
+## figuring out the amount of missingness per column and row
 ## https://stackoverflow.com/questions/52240224/calculate-the-percentage-of-missing-values-per-column-using-r
 
 library(purrr)
@@ -597,10 +596,11 @@ map(Total, ~mean(is.na(.)))
 # levels(as.factor(Total$ManipulationCheck_wm))
 
 ## need to get rid of the id variable 
+## i did a while back 
 
-names(Total)
-Total<-Total %>% dplyr::select(-(117))
-names(Total)
+# names(Total)
+# Total<-Total %>% dplyr::select(-(117))
+# names(Total)
 
 ## I need to dummy code the string variables before I re-run the MCAR
 ## So, i need to code all variables within the data set as 1 if not NA, else NA
@@ -692,7 +692,7 @@ apply(Test_Clean, 1, percentmiss)
 
 
 ## So, since data is MCAR AND there is not enough missing data
-# for multiple imputation, then the MGCFA's with covartiates
+# for multiple imputation, then the MGCFA's with covariates
 # proceeds
 
 
@@ -725,11 +725,11 @@ apply(Test_Clean, 1, percentmiss)
             # the non missing portions
 
 # Excluding the Progress Column 
-
-library(dplyr)
-names(Total)
-Total<-Total %>% dplyr::select(-(1))
-table(apply(Total, 1, percentmiss))
+## Don't do this
+# library(dplyr)
+# names(Total)
+# Total<-Total %>% dplyr::select(-(1))
+# table(apply(Total, 1, percentmiss))
 
 ## Figuring out Covariates for MGCFA
 
@@ -740,7 +740,7 @@ table(apply(Total, 1, percentmiss))
 ## Preliminary Analyses-
 # correlations for divergent and convergent validity
 
-## correlation of items 6 through 20 for Seperate Spheres Ideology
+## correlation of items 6 through 20 for Separate Spheres Ideology
 data.frame(colnames(Total))
 # https://www.rdocumentation.org/packages/multilevel/versions/2.6/topics/item.total
 #install.packages("multilevel")
@@ -748,9 +748,13 @@ library(multilevel)
 levels(as.factor(Total$Condition))
 
 # Separate Spheres Ideology Scale 
-item.total(Total[,6:20])
-item.total(subset(Total, Total$Condition == "wm")[,6:20])
-item.total(subset(Total, Total$Condition == "BTW")[,6:20])
+SepSpheres_ITC<-item.total(Total[,6:20])
+SepSpheres_wm_ITC<-item.total(subset(Total, Total$Condition == "wm")[,6:20])
+SepSpheres_BTW_ITC<-item.total(subset(Total, Total$Condition == "BTW")[,6:20])
+
+write.csv(SepSpheres_ITC, "C:/Users/cogps/Desktop/SepSpheres_ITC.csv", row.names=FALSE)
+write.csv(SepSpheres_ITC, "C:/Users/cogps/Desktop/SepSpheres_wm_ITC.csv", row.names=FALSE)
+write.csv(SepSpheres_ITC, "C:/Users/cogps/Desktop/SepSpheres_BTW_ITC.csv", row.names=FALSE)
 
 data.frame(colnames(Total))
 
@@ -761,18 +765,31 @@ library(dplyr)
 Total <- Total %>% 
      mutate_at(c(21:29), as.numeric)
  
-item.total(Total[,21:29])
-wm<-item.total(subset(Total, Total$Condition == "wm")[,21:29])
-BTW<-item.total(subset(Total, Total$Condition == "BTW")[,21:29])
+Transphobia_ITC<-item.total(Total[,21:29])
+Transphobia_ITC_wm<-item.total(subset(Total, Total$Condition == "wm")[,21:29])
+Transphobia_ITC_BTW<-item.total(subset(Total, Total$Condition == "BTW")[,21:29])
 
+write.csv(Transphobia_ITC, "C:/Users/cogps/Desktop/Transphobia_ITC.csv", row.names=FALSE)
+write.csv(Transphobia_ITC_wm, "C:/Users/cogps/Desktop/Transphobia_ITC_wm.csv", row.names=FALSE)
+write.csv(Transphobia_ITC_BTW, "C:/Users/cogps/Desktop/Transphobia_ITC_BTW.csv", row.names=FALSE)
+
+
+## idk what I was trying to do here
 wm$Item.Total-BTW$Item.Total
 
 # symbolic racism 30:37
 data.frame(colnames(Total))
 
-item.total(Total[,30:37])
-wm<-item.total(subset(Total, Total$Condition == "wm")[,30:37])
-BTW<-item.total(subset(Total, Total$Condition == "BTW")[,30:37])
+Racism_ITC<-item.total(Total[,30:37])
+Racism_ITC_wm<-item.total(subset(Total, Total$Condition == "wm")[,30:37])
+Racism_ITC_BTW<-item.total(subset(Total, Total$Condition == "BTW")[,30:37])
+
+write.csv(Racism_ITC, "C:/Users/cogps/Desktop/Racism_ITC.csv", row.names=FALSE)
+write.csv(Racism_ITC_wm, "C:/Users/cogps/Desktop/Racism_ITC_wm.csv", row.names=FALSE)
+write.csv(Racism_ITC_BTW, "C:/Users/cogps/Desktop/Racism_ITC_BTW.csv", row.names=FALSE)
+
+
+##
 wm$Item.Total-BTW$Item.Total
 
 ## Creating Row means of three main scales
@@ -782,8 +799,10 @@ Total$Separ_Spheres_mean<-rowMeans(Total[ , c(6:20)])
 
 ## correlations between the three scales
 # https://stackoverflow.com/questions/3798998/cor-shows-only-na-or-1-for-correlations-why
-cor(x = as.matrix(subset (Total, select = c(Separ_Spheres_mean, Transph_mean, SymRac_mean))), 
+DV_Corr<-cor(x = as.matrix(subset (Total, select = c(Separ_Spheres_mean, Transph_mean, SymRac_mean))), 
     method = "pearson", use = "pairwise.complete.obs")
+
+write.csv(DV_Corr, "C:/Users/cogps/Desktop/DV_Corr.csv", row.names=FALSE)
 ?cor
 ## Integrate a MLM analysis to MGCFA in variance testing
 
