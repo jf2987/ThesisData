@@ -446,3 +446,29 @@ write.csv(table_fit,  "C:/Users/cogps/Desktop/Transphobia_FitStats.csv", row.nam
 
 
 ## Fitting models with the Racism Scales Might be different 
+setwd("C:/Users/cogps/Desktop/Thesis Analysis")
+CleanData <- read.csv("Clean_Data_2022_Latest.csv") 
+
+names(CleanData)
+dim(CleanData)
+## Delete fully empty rows
+CleanData<-CleanData[!apply(is.na(CleanData[,30:37]), 1, all),]
+dim(CleanData)
+## goes from 678 to 667
+
+names(CleanData)
+overall.model = ' TransPH =~ SimRac1 + SimRac2 + SimRac3 + SimRac4 + SimRac5 + SimRac6 + SimRac7 + SimRac8'
+
+library(lavaan)
+overall.fit <- cfa(model = overall.model,
+                   data = CleanData, 
+                   meanstructure = TRUE) ##this is important 
+summary(overall.fit, 
+        standardized = TRUE, 
+        rsquare = TRUE, 
+        fit.measure = TRUE)
+
+## Understanding Lavaan Degrees of freedom 
+## https://stackoverflow.com/questions/52937569/understanding-degrees-of-freedom-in-lavaan
+### Hierarchal CFA
+## https://www.youtube.com/watch?v=C8U9hanos1U
