@@ -110,7 +110,13 @@ summary(BTW.fit,
 table_fit[2, ] <- c("BTW Model", round(fitmeasures(BTW.fit, 
                                                        c("chisq", "df", "cfi",
                                                          "rmsea", "srmr")),3))
-kable(table_fit)
+## Make a semPlot 
+library(semPlot)
+
+semPaths(BTW.fit, 
+         whatLabels = "std",
+         edge.label.cex = 1,
+         layout = "tree")
 
 
 ## Do a model specific per condition : wm
@@ -129,6 +135,13 @@ table_fit[3, ] <- c("wm Model", round(fitmeasures(wm.fit,
                                                      "rmsea", "srmr")),3))
 kable(table_fit)
 
+## do a graph for wm Model
+library(semPlot)
+
+semPaths(wm.fit, 
+         whatLabels = "std",
+         edge.label.cex = 1,
+         layout = "tree")
 
 
 ## Configural Invariance
@@ -147,6 +160,15 @@ table_fit[4, ] <- c("Configural Model", round(fitmeasures(configural.fit,
                                                   c("chisq", "df", "cfi",
                                                     "rmsea", "srmr")),3))
 kable(table_fit)
+
+## Figure for Configural model of SSI
+
+library(semPlot)
+
+semPaths(configural.fit, 
+         whatLabels = "std",
+         edge.label.cex = 1,
+         layout = "tree")
 
 #### Metric Invariance - setting the loadings to equal ####
 
