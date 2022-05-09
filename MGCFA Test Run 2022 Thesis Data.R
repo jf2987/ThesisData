@@ -166,7 +166,7 @@ kable(table_fit)
 library(semPlot)
 
 semPaths(configural.fit, 
-         whatLabels = "std",
+         whatLabels = "std", 
          edge.label.cex = 1,
          layout = "tree")
 
