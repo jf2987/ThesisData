@@ -17,29 +17,29 @@ CleanData <- read.csv("Clean_Data_2022_Latest.csv")
 
 ## test run drop_na Function
 ## https://www.r-bloggers.com/2021/06/remove-rows-that-contain-all-na-or-certain-columns-in-r/
-df=data.frame(Col1=c("A","B","C","D",
-                     "P1","P2","P3")
-              ,Col2=c(NA,8,NA,9,10,8,9)
-              ,Col3=c(NA,7,6,8,NA,7,8)
-              ,Col4=c(NA,NA,7,7,NA,7,7))
-df
+# df=data.frame(Col1=c("A","B","C","D",
+#                      "P1","P2","P3")
+#               ,Col2=c(NA,8,NA,9,10,8,9)
+#               ,Col3=c(NA,7,6,8,NA,7,8)
+#               ,Col4=c(NA,NA,7,7,NA,7,7))
+# df
 
-library(tidyr)
-df %>% drop_na(2:4)
+# library(tidyr)
+# df %>% drop_na(2:4)
 ## so, this one deletes them if they had NA on any of the columsn mentioned
 ## they dont necessarly have to have ALL of the columns NA
 ## this is not what I wanted
 
 ## Now test running the other code
 
-df=data.frame(Col1=c("A","B","C","D",
-                     "P1","P2","P3")
-              ,Col2=c(NA,8,NA,9,10,8,9)
-              ,Col3=c(NA,7,6,8,NA,7,8)
-              ,Col4=c(NA,NA,7,7,NA,7,7))
-df
-
-df[!apply(is.na(df[,2:4]), 1, all),]
+# df=data.frame(Col1=c("A","B","C","D",
+#                      "P1","P2","P3")
+#               ,Col2=c(NA,8,NA,9,10,8,9)
+#               ,Col3=c(NA,7,6,8,NA,7,8)
+#               ,Col4=c(NA,NA,7,7,NA,7,7))
+# df
+# 
+# df[!apply(is.na(df[,2:4]), 1, all),]
 ## this code worked
 
 CleanData<-CleanData[!apply(is.na(CleanData[,6:20]), 1, all),]
@@ -80,7 +80,11 @@ table_fit[1, ] <- c("Overall Model", round(fitmeasures(overall.fit,
                                                        c("chisq", "df", "cfi",
                                                          "rmsea", "srmr")),3))
 kable(table_fit)
-
+library(semTools)
+library(semPlot)
+## i got this function from pp. 4 of Hirschfeld & Von Brachel (2014)
+moreFitIndices(overall.fit)
+semPaths(overall.fit, "std")
 
 # make a picture of the model
 
