@@ -613,7 +613,8 @@ kable(table_fit)
 
 ## Understanding Lavaan Degrees of freedom 
 ## https://stackoverflow.com/questions/52937569/understanding-degrees-of-freedom-in-lavaan
-### Hierarchal CFA
+
+#### Hierarchal CFA ####
 ## https://www.youtube.com/watch?v=C8U9hanos1U
 
 
@@ -628,17 +629,27 @@ dim(CleanData)
 ## goes from 678 to 669
 
 names(CleanData)
+# overall.model = ' 
+# SimRac =~ SimRac1 + SimRac2 + SimRac3 + SimRac4 + SimRac5 + SimRac6 + SimRac7 + SimRac8;
+# SSIT =~ SepSpher1 + SepSpher2 + SepSpher3 + SepSpher4 + SepSpher5 + SepSpher6 + SepSpher7 + SepSpher8 + SepSpher9 + SepSpher10 + SepSpher11 + SepSpher12 + SepSpher13 + SepSpher14 + SepSpher15;
+# TransPH =~ TransPH1 + TransPH2 + TransPH3 + TransPH4 + TransPH5 + TransPH6 + TransPH7 + TransPH8 + TransPH9
+# global=~ SimRac + SSIT + TransPH
+# 
+# '
+
 overall.model = ' 
 SimRac =~ SimRac1 + SimRac2 + SimRac3 + SimRac4 + SimRac5 + SimRac6 + SimRac7 + SimRac8;
 SSIT =~ SepSpher1 + SepSpher2 + SepSpher3 + SepSpher4 + SepSpher5 + SepSpher6 + SepSpher7 + SepSpher8 + SepSpher9 + SepSpher10 + SepSpher11 + SepSpher12 + SepSpher13 + SepSpher14 + SepSpher15;
 TransPH =~ TransPH1 + TransPH2 + TransPH3 + TransPH4 + TransPH5 + TransPH6 + TransPH7 + TransPH8 + TransPH9
-global=~ SimRac + SSIT + TransPH
+global=~ NA*SimRac + SSIT + TransPH
+global~~ 1*global
 '
+
 
 library(lavaan)
 overall.fit <- cfa(model = overall.model,
                    data = CleanData, 
-                   meanstructure = TRUE) ##this is important 
+                   meanstructure = TRUE) #TRUE) ##this is important 
 summary(overall.fit, 
         standardized = TRUE, 
         rsquare = TRUE, 
@@ -777,3 +788,20 @@ table_fit[7, ] <- c("Strict Model", round(fitmeasures(strict.fit,
                                                         "rmsea", "srmr")),3))
 kable(table_fit)
 
+###
+
+library(semTools)
+moreFitIndices(strict.fit)
+semPaths(strict.fit, "std")
+library(semPlot)
+
+semPaths(strict.fit, 
+         whatLabels = "std",
+         edge.label.cex = 1,
+         layout = "tree")
+
+
+summary(strict.fit, 
+        standardized = TRUE, 
+        rsquare = TRUE, 
+        fit.measure = TRUE)
