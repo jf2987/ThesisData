@@ -23,10 +23,10 @@ CleanData <- read.csv("Clean_Data_2022_Latest.csv")
 #               ,Col3=c(NA,7,6,8,NA,7,8)
 #               ,Col4=c(NA,NA,7,7,NA,7,7))
 # df
-
+# 
 # library(tidyr)
 # df %>% drop_na(2:4)
-## so, this one deletes them if they had NA on any of the columsn mentioned
+## so, this function delete rows that had NA on any of the columns mentioned
 ## they dont necessarly have to have ALL of the columns NA
 ## this is not what I wanted
 
@@ -66,26 +66,64 @@ overall.model = ' SSIT =~ SepSpher1 + SepSpher2 + SepSpher3 + SepSpher4 + SepSph
 overall.fit <- cfa(model = overall.model,
                    data = CleanData, 
                    meanstructure = TRUE) ##this is important 
+
 summary(overall.fit, 
         standardized = TRUE, 
         rsquare = TRUE, 
         fit.measure = TRUE)
+
+
+## fitting an ordered version as suggested by Hirschfeld & Von Brachel (2014)
+## in page 8 
+
+Ordered.overall.fit <- cfa(model = overall.model,
+                   data = CleanData, ordered = c("SepSpher1", "SepSpher2",
+                                                 "SepSpher3","SepSpher4",
+                                                 "SepSpher5","SepSpher6",
+                                                 "SepSpher7","SepSpher8",
+                                                 "SepSpher9","SepSpher10",
+                                                 "SepSpher11","SepSpher12",
+                                                 "SepSpher13","SepSpher14",
+                                                 "SepSpher15"), 
+                   meanstructure = TRUE) ##this is important 
+
+
+## summary of ordered
+summary(Ordered.overall.fit, 
+        standardized = TRUE, 
+        rsquare = TRUE, 
+        fit.measure = TRUE)
+
+# plot and additional stats of ordered model
+library(semTools)
+library(semPlot)
+semPaths(Ordered.overall.fit, "std", curvePivot = TRUE, thresholds = FALSE)
+moreFitIndices(Ordered.overall.fit)
 
 #### Make table with the results #### 
 
 library(knitr)
 table_fit <- matrix(NA, nrow = 9, ncol = 6)
 colnames(table_fit) = c("Model", "X2", "df", "CFI", "RMSEA", "SRMR")
-table_fit[1, ] <- c("Overall Model", round(fitmeasures(overall.fit, 
+
+# inputting info into table
+table_fit[1, ] <- c("Overall Model No Group", round(fitmeasures(overall.fit, 
                                                        c("chisq", "df", "cfi",
                                                          "rmsea", "srmr")),3))
 kable(table_fit)
+
+
+table_fit[2, ] <- c("Ordered Overall Model No Group", round(fitmeasures(Ordered.overall.fit, 
+                                                                c("chisq", "df", "cfi",
+                                                                  "rmsea", "srmr")),3))
+kable(table_fit)
+
+
+## gettin additional statistics and plotting the regular overall model
 library(semTools)
 library(semPlot)
 ## i got this function from pp. 4 of Hirschfeld & Von Brachel (2014)
 moreFitIndices(overall.fit)
-semPaths(overall.fit, "std")
-
 # make a picture of the model
 
 library(semPlot)
@@ -105,15 +143,56 @@ summary(BTW.fit,
         rsquare = TRUE, 
         fit.measure = TRUE)
 
+## an ordered model specifically for the BTW condition
+Ordered.BTW.fit <- cfa(model = overall.model,
+               data = CleanData[CleanData$Condition=="BTW", ],
+               ordered = c("SepSpher1", "SepSpher2",
+                           "SepSpher3","SepSpher4",
+                           "SepSpher5","SepSpher6",
+                           "SepSpher7","SepSpher8",
+                           "SepSpher9","SepSpher10",
+                           "SepSpher11","SepSpher12",
+                           "SepSpher13","SepSpher14",
+                           "SepSpher15"),
+               meanstructure = TRUE) ##this is important 
+
+
+## summary statistics of the Ordered BTW model
+
+summary(Ordered.BTW.fit, 
+        standardized = TRUE, 
+        rsquare = TRUE, 
+        fit.measure = TRUE)
+
+
 ## Make table with the results of BTW
 
-table_fit[2, ] <- c("BTW Model", round(fitmeasures(BTW.fit, 
+table_fit[3, ] <- c("BTW Model", round(fitmeasures(BTW.fit, 
                                                        c("chisq", "df", "cfi",
                                                          "rmsea", "srmr")),3))
-## Make a semPlot 
+
+## add row with the results of the ordered version of the overall model 
+## for BTW
+
+table_fit[4, ] <- c("Ordered BTW Model", round(fitmeasures(Ordered.BTW.fit, 
+                                                   c("chisq", "df", "cfi",
+                                                     "rmsea", "srmr")),3))
+
+
+# View table thus far
+kable(table_fit)
+
+## Make a semPlot of the regular model for BTW
 library(semPlot)
 
 semPaths(BTW.fit, 
+         whatLabels = "std",
+         edge.label.cex = 1,
+         layout = "tree")
+
+## Make a semPlot of the ordered BTW model
+
+semPaths(Ordered.BTW.fit, 
          whatLabels = "std",
          edge.label.cex = 1,
          layout = "tree")
