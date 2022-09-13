@@ -42,6 +42,8 @@ CleanData <- read.csv("Clean_Data_2022_Latest.csv")
 # df[!apply(is.na(df[,2:4]), 1, all),]
 ## this code worked
 
+## deleting rows that which are completely empty for variables of interest
+names(CleanData)
 CleanData<-CleanData[!apply(is.na(CleanData[,6:20]), 1, all),]
 
 names(CleanData)
@@ -107,13 +109,13 @@ table_fit <- matrix(NA, nrow = 9, ncol = 6)
 colnames(table_fit) = c("Model", "X2", "df", "CFI", "RMSEA", "SRMR")
 
 # inputting info into table
-table_fit[1, ] <- c("Overall Model No Group", round(fitmeasures(overall.fit, 
+table_fit[1, ] <- c("Sexism Overall Model No Group", round(fitmeasures(overall.fit, 
                                                        c("chisq", "df", "cfi",
                                                          "rmsea", "srmr")),3))
 kable(table_fit)
 
 
-table_fit[2, ] <- c("Ordered Overall Model No Group", round(fitmeasures(Ordered.overall.fit, 
+table_fit[2, ] <- c("Sexism Ordered Overall Model No Group", round(fitmeasures(Ordered.overall.fit, 
                                                                 c("chisq", "df", "cfi",
                                                                   "rmsea", "srmr")),3))
 kable(table_fit)
@@ -167,14 +169,14 @@ summary(Ordered.BTW.fit,
 
 ## Make table with the results of BTW
 
-table_fit[3, ] <- c("BTW Model", round(fitmeasures(BTW.fit, 
+table_fit[3, ] <- c("Sexism BTW Model", round(fitmeasures(BTW.fit, 
                                                        c("chisq", "df", "cfi",
                                                          "rmsea", "srmr")),3))
 
 ## add row with the results of the ordered version of the overall model 
 ## for BTW
 
-table_fit[4, ] <- c("Ordered BTW Model", round(fitmeasures(Ordered.BTW.fit, 
+table_fit[4, ] <- c("Sexism Ordered BTW Model", round(fitmeasures(Ordered.BTW.fit, 
                                                    c("chisq", "df", "cfi",
                                                      "rmsea", "srmr")),3))
 
@@ -209,10 +211,41 @@ summary(wm.fit,
         fit.measure = TRUE)
 ## apparently only 331 of 332 rows were used for the white model-- I wonder why
 
-table_fit[3, ] <- c("wm Model", round(fitmeasures(wm.fit, 
+table_fit[5, ] <- c("Sexism wm Model", round(fitmeasures(wm.fit, 
                                                    c("chisq", "df", "cfi",
                                                      "rmsea", "srmr")),3))
 kable(table_fit)
+
+
+## ordered model wm
+
+Ordered.wm.fit <- cfa(model = overall.model,
+                       data = CleanData[CleanData$Condition=="wm", ],
+                       ordered = c("SepSpher1", "SepSpher2",
+                                   "SepSpher3","SepSpher4",
+                                   "SepSpher5","SepSpher6",
+                                   "SepSpher7","SepSpher8",
+                                   "SepSpher9","SepSpher10",
+                                   "SepSpher11","SepSpher12",
+                                   "SepSpher13","SepSpher14",
+                                   "SepSpher15"),
+                       meanstructure = TRUE) ##this is important 
+
+
+## summary statistics of the Ordered wm model
+
+summary(Ordered.wm.fit, 
+        standardized = TRUE, 
+        rsquare = TRUE, 
+        fit.measure = TRUE)
+
+## put the ordered wm model in the table row 6
+
+table_fit[6, ] <- c("Sexism Ordered wm Model", round(fitmeasures(Ordered.wm.fit, 
+                                                  c("chisq", "df", "cfi",
+                                                    "rmsea", "srmr")),3))
+kable(table_fit)
+
 
 ## do a graph for wm Model
 library(semPlot)
@@ -223,7 +256,17 @@ semPaths(wm.fit,
          layout = "tree")
 
 
-## Configural Invariance
+## do a graph for ordered wm Model
+library(semPlot)
+
+windows()
+semPaths(Ordered.wm.fit, 
+         whatLabels = "std",
+         edge.label.cex = 1,
+         layout = "tree")
+
+
+## Sexism Configural Invariance
 
 configural.fit <- cfa(model = overall.model,
               data = CleanData, 
@@ -235,10 +278,45 @@ summary(configural.fit,
         rsquare = TRUE, 
         fit.measure = TRUE)
 
-table_fit[4, ] <- c("Configural Model", round(fitmeasures(configural.fit, 
+table_fit[7, ] <- c("Sexism Configural Model", round(fitmeasures(configural.fit, 
                                                   c("chisq", "df", "cfi",
                                                     "rmsea", "srmr")),3))
 kable(table_fit)
+
+
+## ordered configural fit for Sexism
+
+Ordered.configural.fit <- cfa(model = overall.model,
+                           data = CleanData, ordered = c("SepSpher1", "SepSpher2",
+                                                         "SepSpher3","SepSpher4",
+                                                         "SepSpher5","SepSpher6",
+                                                         "SepSpher7","SepSpher8",
+                                                         "SepSpher9","SepSpher10",
+                                                         "SepSpher11","SepSpher12",
+                                                         "SepSpher13","SepSpher14",
+                                                         "SepSpher15"), 
+                           meanstructure = TRUE, group = "Condition")
+
+## i am having some difficulties estimating parameters here
+## it seems there are few people who answered sepSphere15 
+## this is the error I get 
+## Error in lav_samplestats_step1(Y = Data, wt = wt, ov.names = ov.names,  : 
+# lavaan ERROR: some categories of variable `SepSpher15' are empty in group 1; frequencies are [206 48 31 27 13 6 0]
+## ## https://groups.google.com/g/lavaan/c/ZvIjcQFTRQY?pli=1
+## other folks have faced this issue as well 
+
+
+summary(Ordered.configural.fit, 
+        standardized = TRUE, 
+        rsquare = TRUE, 
+        fit.measure = TRUE)
+
+table_fit[8, ] <- c("Sexism Ordered Configural Model", round(fitmeasures(Ordered.configural.fit, 
+                                                                 c("chisq", "df", "cfi",
+                                                                   "rmsea", "srmr")),3))
+kable(table_fit)
+
+
 
 ## Figure for Configural model of SSI
 
@@ -262,12 +340,45 @@ summary(metric.fit,
         rsquare = TRUE, 
         fit.measure = TRUE)
 
-table_fit[5, ] <- c("Metric Model", round(fitmeasures(metric.fit, 
+table_fit[8, ] <- c("Sexism Metric Model", round(fitmeasures(metric.fit, 
                                                           c("chisq", "df", "cfi",
                                                             "rmsea", "srmr")),3))
 kable(table_fit)
 
     # the loadings between the groups are basically equal
+
+
+## Sexism Ordered Metric Model 
+
+Ordered.metric.fit <- cfa(model = overall.model,
+                  data = CleanData, 
+                  meanstructure = TRUE,
+                  group = "Condition",
+                  group.equal=c("loadings"),ordered = c("SepSpher1", "SepSpher2",
+                                                        "SepSpher3","SepSpher4",
+                                                        "SepSpher5","SepSpher6",
+                                                        "SepSpher7","SepSpher8",
+                                                        "SepSpher9","SepSpher10",
+                                                        "SepSpher11","SepSpher12",
+                                                        "SepSpher13"))  
+
+# Error in lav_samplestats_step1(Y = Data, wt = wt, ov.names = ov.names,  : 
+#                                  lavaan ERROR: some categories of variable `SepSpher15' are empty in group 1; frequencies are [206 48 31 27 13 6 0]
+
+## i had to treat as continues items 14 and 15 for it to work
+
+
+summary(Ordered.metric.fit, 
+        standardized = TRUE, 
+        rsquare = TRUE, 
+        fit.measure = TRUE)
+
+
+table_fit[9, ] <- c("Sexism Ordered Metric Model", round(fitmeasures(Ordered.metric.fit, 
+                                                             c("chisq", "df", "cfi",
+                                                               "rmsea", "srmr")),3))
+kable(table_fit)
+
  
 
 #### Scalar Invariance -- setting the intercepts to equal####
